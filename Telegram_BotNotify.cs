@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Azure.Functions.Worker.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Net;
 
 namespace Telegram.Bot.Web;
 
@@ -24,7 +25,7 @@ public class Telegram_BotNotify
     }
 
     [Function("Telegram_BotNotify")]
-    public async Task Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData req)
+    public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequestData req, FunctionContext executionContext)
     {
         _logger.LogInformation("C# HTTP trigger function processed a request.");
 
@@ -38,5 +39,8 @@ public class Telegram_BotNotify
                 text: $"Received your message {update.Message.Chat.Id}"
             );
         }
+        var response = req.CreateResponse(HttpStatusCode.OK);
+        await response.WriteStringAsync("Welcome to Azure Functions!");
+        return response;
     }
 }
