@@ -1,0 +1,41 @@
+name: Build and Deploy Azure Functions
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '8.0.x' # Passen Sie die Version an Ihre Funktion an
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Deploy to Azure Function App
+      uses: azure/functions-action@v1
+      with:
+        app-name: Telegram-BotNotify
+        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+        package: .
